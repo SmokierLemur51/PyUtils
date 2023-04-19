@@ -22,23 +22,29 @@ def Gather_Data():
 
 def Pretax_Projections(data):
 	if type(data) == dict:
-		window_day = data["avg_windows"] * data["houses_per_day"]
-		window_week = window_day * data["days_per_week"]
-		window_month = window_week * 4
-		window_year = window_month * 12
+		windows_daily = data["avg_windows"] * data["houses_per_day"]
+
 		projections = {
-			"windows_per_day": window_day,
-			"windows_per_week": window_week,
-			"windows_per_month": window_month,
-			"windows_per_year": window_year,
+			"estimated_workload": {
+				"days_per_week": data["days_per_week"],
+				"houses_per_day": data["houses_per_day"]
+				"est_windows_daily": windows_daily,
+				"est_windows_weekly": (windows_daily * data["days_per_week"]),
+				"est_windows_monthly": ((windows_daily * data["days_per_week"]) * 4),
+				"est_yearly_windows": ((windows_daily * data["days_per_week"] * 4) * 12),
+			},	
+			"gross_income_proj": {},
+			"expenses": {},
 		}
-		# set other keys that rely on the initialized ones 
-		projections["income_daily"] = (projections["windows_per_day"] * data["rate"]), 
-		projections["income_weekly"] = (projections["income_daily"] * data["days_per_week"])
-		projections["income_monthly"] = (projections["income_weekly"] * 4)
-		projections["income_yearly"] = (projections["income_monthly"] * 12)
-		
-		return projections
+		# calculate gross income projections based off of rates and estimated number of windows 
+		for x in data["rates"]:
+			projections["gross_income_proj"][f"${x}_windows_daily"] = (projections["windows_per_day"] * float(x))
+			projections["gross_income_proj"][f"${x}_windows_weekly"] = (projections["gross_income_proj"][f"${x}_windows_daily"] * data["days_per_week"])
+			projections["gross_income_proj"][f"${x}_windows_monthly"] = (projections["gross_income_proj"][f"${x}_windows_weekly"] * 4)
+			projections["gross_income_proj"][f"${x}_windows_yearly"] = (projections["gross_income_proj"][f"${x}_windows_monthly"] * 12)  
+
+	return projections
+
 	else:
 		print("Paramter must be dictionary for this to properly function.")
 		return
