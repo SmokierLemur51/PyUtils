@@ -1,0 +1,8 @@
+video:
+	0:0
+	https://www.youtube.com/watch?v=P7OGisGNnTw&list=PLH1GhVAtxussESi-YRCN49mbfLW2rquD5&index=3
+
+packages:
+	- pygame
+	- noise
+	-
