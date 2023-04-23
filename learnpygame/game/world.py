@@ -25,8 +25,11 @@ class World:
 
 
 	def update(self, camera):
-		mouse_pos = pg.mouse.get_pos()
 
+		mouse_pos = pg.mouse.get_pos()
+		mouse_action = pg.mouse.get_pressed()
+
+		self.temp_tile = None
 		if self.hud.selected_tile is not None:
 			grid_pos = self.mouse_to_grid(mouse_pos[0], mouse_pos[1], camera.scroll)
 
@@ -42,6 +45,7 @@ class World:
 
 
 	def draw_world(self, screen, camera):
+
 		screen.blit(self.grass_tiles, (camera.scroll.x, camera.scroll.y))
 
 		for x in range(self.grid_length_x):
