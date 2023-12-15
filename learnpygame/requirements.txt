@@ -1,7 +1,5 @@
 video:
-	15:21
-	https://www.youtube.com/watch?v=IN5GXYYfYqE&list=PLH1GhVAtxussESi-YRCN49mbfLW2rquD5&index=5
-
+	start of video 6
 packages:
 	- pygame
 	- noise

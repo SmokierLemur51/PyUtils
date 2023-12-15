@@ -33,15 +33,26 @@ class World:
 		if self.hud.selected_tile is not None:
 			grid_pos = self.mouse_to_grid(mouse_pos[0], mouse_pos[1], camera.scroll)
 
-			img = self.hud.selected_tile["image"].copy()
-			img.set_alpha(100)
+			if self.can_place_tile(grid_pos):
+				img = self.hud.selected_tile["image"].copy()
+				img.set_alpha(100)
 
-			render_pos = self.world[grid_pos[0]][grid_pos[1]]["render_pos"]
+				render_pos = self.world[grid_pos[0]][grid_pos[1]]["render_pos"]
+				iso_poly = self.world[grid_pos[0]][grid_pos[1]]["iso_poly"]
+				collision = self.world[grid_pos[0]][grid_pos[1]]["collision"]
 
-			self.temp_tile = {
-				"image": img,
-				"render_pos": render_pos,
-			}
+				self.temp_tile = {
+					"image": img,
+					"render_pos": render_pos,
+					"iso_poly": iso_poly,
+					"collision": collision,
+				}
+
+				if mouse_action[0] and not collision:
+					self.world[grid_pos[0]][grid_pos[1]]["tile"] = self.hud.selected_tile["name"]
+					self.world[grid_pos[0]][grid_pos[1]]["collision"] = True
+					self.hud.selected_tile = None
+
 
 
 	def draw_world(self, screen, camera):
@@ -62,6 +73,13 @@ class World:
 					)
 
 		if self.temp_tile is not None:
+			iso_poly = self.temp_tile["iso_poly"]
+			iso_poly = [(x + self.grass_tiles.get_width()/2 + camera.scroll.x, y + camera.scroll.y) for x, y in iso_poly]
+			if self.temp_tile["collision"]:
+				pg.draw.polygon(screen, (255, 0, 0), iso_poly, 3)
+			else:
+				pg.draw.polygon(screen, (255, 255, 255), iso_poly, 3)
+
 			render_pos = self.temp_tile["render_pos"]
 			screen.blit(
 				self.temp_tile["image"],
@@ -122,6 +140,7 @@ class World:
 			"iso_poly": iso_poly,
 			"render_pos": [minx, miny],
 			"tile": tile,
+			"collision": False if tile == "" else True,
 		}
 
 		return out
@@ -153,7 +172,32 @@ class World:
 
 	def load_images(self):
 		block = pg.image.load("assets/graphics/block.png").convert_alpha()
+			# read images
+		building1 = pg.image.load("assets/graphics/building01.png").convert_alpha()
+		building2 = pg.image.load("assets/graphics/building02.png").convert_alpha()
 		tree = pg.image.load("assets/graphics/tree.png").convert_alpha()
 		rock = pg.image.load("assets/graphics/rock.png").convert_alpha()
 
-		return {"block": block, "tree": tree, "rock": rock,}
+		images = {
+			"building1": building1,
+			"building2": building2,
+			"tree": tree,
+			"rock": rock,
+			"block": block,
+		}
+
+		return images
+
+	def can_place_tile(self, grid_pos):
+		mouse_on_panel = False
+		for rect in [self.hud.resources_rect, self.hud.build_rect, self.hud.select_rect]:
+			if rect.collidepoint(pg.mouse.get_pos()):
+				mouse_on_panel=True
+
+		world_bounds = (0 <= grid_pos[0] <= self.grid_length_x) and (0 <= grid_pos[1] <= self.grid_length_y)
+
+		if world_bounds and not mouse_on_panel:
+			return True
+		else:
+			return False
+
